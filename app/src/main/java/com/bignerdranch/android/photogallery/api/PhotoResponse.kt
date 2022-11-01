@@ -6,5 +6,6 @@ import com.squareup.moshi.JsonClass
 // The list where every photo is stored:
 @JsonClass(generateAdapter = true)
 data class PhotoResponse(
+    val pages: Int,
     @Json(name = "photo") val galleryItems: List<GalleryItem>
 )
