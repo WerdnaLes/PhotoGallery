@@ -8,6 +8,7 @@ import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import coil.load
+import coil.transform.CircleCropTransformation
 import com.bignerdranch.android.photogallery.api.GalleryItem
 import com.bignerdranch.android.photogallery.databinding.ListItemGalleryBinding
 
@@ -17,6 +18,7 @@ class PhotoViewHolder(
     fun bind(galleryItem: GalleryItem?) {
         // Adapt the image with help of Coil:
         binding.itemImageView.load(galleryItem?.url) {
+            crossfade(true)
             placeholder(ColorDrawable(Color.TRANSPARENT))
         }
     }

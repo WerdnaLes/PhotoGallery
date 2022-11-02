@@ -2,9 +2,10 @@ package com.bignerdranch.android.photogallery
 
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
+import androidx.appcompat.widget.SearchView
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -42,8 +43,10 @@ class PhotoGalleryFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         initView()
         collectUIState()
+        initMenuHost()
     }
 
     override fun onDestroy() {
@@ -70,6 +73,48 @@ class PhotoGalleryFragment : Fragment() {
                     Log.d("PhotoGallery", "Items fetched")
                     adapter?.submitData(items)
                 }
+            }
+        }
+    }
+
+    private fun initMenuHost() {
+        val menuHost: MenuHost = requireActivity()
+        menuHost.addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.fragment_photo_gallery, menu)
+                val searchItem: MenuItem =
+                    menu.findItem(R.id.menu_item_search)
+                val searchView = searchItem.actionView as? SearchView
+
+                searchView?.setOnQueryTextListener(object :
+                    SearchView.OnQueryTextListener {
+                    override fun onQueryTextSubmit(query: String?): Boolean {
+                        Log.d("PhotoGalleryFragment", " QueryTextSubmit: $query")
+                        setQuery(query ?: "")
+                        return true
+                    }
+
+                    override fun onQueryTextChange(newText: String?): Boolean {
+                        Log.d("PhotoGalleryFragment", "QueryTextChange: $newText")
+                        return false
+                    }
+
+                })
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                return true
+            }
+
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+    }
+
+    private fun setQuery(query: String) {
+        photoGalleryViewModel.apply {
+            if (queryText != query) {
+                queryText = query
+                fetchPhotos(queryText)
+                collectUIState()
             }
         }
     }
