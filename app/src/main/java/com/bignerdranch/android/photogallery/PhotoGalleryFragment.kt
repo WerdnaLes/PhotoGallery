@@ -90,7 +90,7 @@ class PhotoGalleryFragment : Fragment() {
                     SearchView.OnQueryTextListener {
                     override fun onQueryTextSubmit(query: String?): Boolean {
                         Log.d("PhotoGalleryFragment", " QueryTextSubmit: $query")
-                        setQuery(query ?: "")
+                        photoGalleryViewModel.setQuery(query ?: "")
                         return true
                     }
 
@@ -103,19 +103,16 @@ class PhotoGalleryFragment : Fragment() {
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                return true
+                return when (menuItem.itemId) {
+                    R.id.menu_item_clear -> {
+                        Log.d("PhotoGalleryFragment", "Clearing search")
+                        photoGalleryViewModel.setQuery("")
+                        true
+                    }
+                    else -> false
+                }
             }
 
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
-    }
-
-    private fun setQuery(query: String) {
-        photoGalleryViewModel.apply {
-            if (queryText != query) {
-                queryText = query
-                fetchPhotos(queryText)
-                collectUIState()
-            }
-        }
     }
 }

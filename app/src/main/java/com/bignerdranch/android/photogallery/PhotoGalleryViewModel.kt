@@ -1,34 +1,41 @@
 package com.bignerdranch.android.photogallery
 
 import android.util.Log
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.bignerdranch.android.photogallery.api.GalleryItem
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 
-const val CURRENT_QUERY_KEY = "CURRENT_QUERY_KEY"
-
-class PhotoGalleryViewModel(private val savedStateHandle: SavedStateHandle) : ViewModel() {
+class PhotoGalleryViewModel : ViewModel() {
     private val photoRepository = PhotoRepository()
+    private val preferencesRepository =
+        PreferencesRepository.get()
 
-    var queryText: String
-        get() = savedStateHandle[CURRENT_QUERY_KEY] ?: ""
-        set(value) = savedStateHandle.set(CURRENT_QUERY_KEY, value)
+    private val _galleryItems: MutableStateFlow<PagingData<GalleryItem>> =
+        MutableStateFlow(PagingData.empty())
+    val galleryItems = _galleryItems.asStateFlow()
 
-    var galleryItems: StateFlow<PagingData<GalleryItem>> = queryCall()
-
-    fun fetchPhotos(query: String = queryText) {
-        Log.d("ViewModel", "Querying fetch")
-        galleryItems = queryCall(query)
+    init {
+        viewModelScope.launch {
+            preferencesRepository.storedQuery.collectLatest { storedQuery ->
+                Log.d("ViewModel", "Start querying...")
+                fetchGalleryItems(storedQuery).collectLatest { pagingData ->
+                    _galleryItems.value = pagingData
+                }
+            }
+        }
     }
 
-    private fun queryCall(query: String = queryText): StateFlow<PagingData<GalleryItem>> {
-        Log.d("ViewModel", "Querying call")
-        return photoRepository.fetchPhotos(query)
+    private fun fetchGalleryItems(query: String) =
+        photoRepository.fetchPhotos(query)
             .cachedIn(viewModelScope)
-            .stateIn(viewModelScope, SharingStarted.Lazily, PagingData.empty())
+
+    fun setQuery(query: String) {
+        viewModelScope.launch {
+            preferencesRepository.setStoredQuery(query)
+        }
     }
 }
