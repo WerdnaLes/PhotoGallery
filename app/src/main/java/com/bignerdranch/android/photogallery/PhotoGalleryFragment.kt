@@ -15,6 +15,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.GridLayoutManager
 import com.bignerdranch.android.photogallery.databinding.FragmentPhotoGalleryBinding
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -27,6 +28,7 @@ class PhotoGalleryFragment : Fragment() {
             "Cannot access binding because it is null. Is the view visible?"
         }
     private var adapter: MyPagingAdapter? = null
+    private var searchView: SearchView? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -44,9 +46,9 @@ class PhotoGalleryFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        initMenuHost()
         initView()
         collectUIState()
-        initMenuHost()
     }
 
     override fun onDestroy() {
@@ -58,7 +60,15 @@ class PhotoGalleryFragment : Fragment() {
     private fun initView() {
         adapter = MyPagingAdapter()
         adapter?.addLoadStateListener { state ->
-            binding.progress.isVisible = state.refresh == LoadState.Loading
+            val refreshState = state.refresh
+            binding.progress.isVisible = refreshState == LoadState.Loading
+            if (refreshState is LoadState.Error) {
+                Snackbar.make(
+                    binding.root,
+                    refreshState.error.localizedMessage ?: "",
+                    Snackbar.LENGTH_SHORT
+                ).show()
+            }
         }
         binding.photoGrid.adapter = adapter?.withLoadStateHeaderAndFooter(
             header = PhotosLoaderStateAdapter(),
@@ -69,9 +79,10 @@ class PhotoGalleryFragment : Fragment() {
     private fun collectUIState() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                photoGalleryViewModel.galleryItems.collectLatest { items ->
+                photoGalleryViewModel.uiState.collectLatest { state ->
                     Log.d("PhotoGallery", "Items fetched")
-                    adapter?.submitData(items)
+                    searchView?.setQuery(state.query, false)
+                    adapter?.submitData(state.images)
                 }
             }
         }
@@ -84,21 +95,29 @@ class PhotoGalleryFragment : Fragment() {
                 menuInflater.inflate(R.menu.fragment_photo_gallery, menu)
                 val searchItem: MenuItem =
                     menu.findItem(R.id.menu_item_search)
-                val searchView = searchItem.actionView as? SearchView
+                searchView = searchItem.actionView as? SearchView
 
                 searchView?.setOnQueryTextListener(object :
                     SearchView.OnQueryTextListener {
                     override fun onQueryTextSubmit(query: String?): Boolean {
                         Log.d("PhotoGalleryFragment", " QueryTextSubmit: $query")
                         photoGalleryViewModel.setQuery(query ?: "")
+                        searchView?.clearFocus()
                         return true
                     }
 
                     override fun onQueryTextChange(newText: String?): Boolean {
                         Log.d("PhotoGalleryFragment", "QueryTextChange: $newText")
+//                        val newQuery = newText ?: ""
+//                        if (newQuery.length >= 3) {
+//                            photoGalleryViewModel.setQuery(newText ?: "")
+//                            return true
+//                        } else if (newQuery.isEmpty()) {
+//                            photoGalleryViewModel.setQuery("")
+//                            return true
+//                        }
                         return false
                     }
-
                 })
             }
 
@@ -112,7 +131,6 @@ class PhotoGalleryFragment : Fragment() {
                     else -> false
                 }
             }
-
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 }

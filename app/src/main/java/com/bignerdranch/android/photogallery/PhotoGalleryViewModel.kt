@@ -14,16 +14,26 @@ class PhotoGalleryViewModel : ViewModel() {
     private val preferencesRepository =
         PreferencesRepository.get()
 
-    private val _galleryItems: MutableStateFlow<PagingData<GalleryItem>> =
-        MutableStateFlow(PagingData.empty())
-    val galleryItems = _galleryItems.asStateFlow()
+    data class PhotoGalleryUiState(
+        val images: PagingData<GalleryItem> = PagingData.empty(),
+        val query: String = ""
+    )
+
+    private val _uiState: MutableStateFlow<PhotoGalleryUiState> =
+        MutableStateFlow(PhotoGalleryUiState())
+    val uiState = _uiState.asStateFlow()
 
     init {
         viewModelScope.launch {
             preferencesRepository.storedQuery.collectLatest { storedQuery ->
                 Log.d("ViewModel", "Start querying...")
                 fetchGalleryItems(storedQuery).collectLatest { pagingData ->
-                    _galleryItems.value = pagingData
+                    _uiState.update { oldState ->
+                        oldState.copy(
+                            images = pagingData,
+                            query = storedQuery
+                        )
+                    }
                 }
             }
         }
