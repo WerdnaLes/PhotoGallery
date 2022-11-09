@@ -10,7 +10,6 @@ import androidx.datastore.preferences.preferencesDataStoreFile
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
-import retrofit2.http.Query
 
 class PreferencesRepository private constructor(
     private val dataStore: DataStore<Preferences>

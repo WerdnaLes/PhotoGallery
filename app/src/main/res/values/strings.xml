@@ -1,5 +1,10 @@
 <resources>
     <string name="app_name">PhotoGallery</string>
     <string name="search">Search</string>
-    <string name="clear_search">Clear Search</string>
+    <string name="home_page">Home page</string>
+    <string name="search_hint">Search photos</string>
+    <string name="clear_history_menu_btn">Clear History</string>
+    <string name="clear_history_confirmation">Do you really want to clear search history?</string>
+    <string name="clear_history_positive">Yes</string>
+    <string name="clear_history_negative">No</string>
 </resources>
