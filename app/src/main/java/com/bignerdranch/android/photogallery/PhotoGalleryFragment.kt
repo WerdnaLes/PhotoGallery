@@ -1,8 +1,10 @@
 package com.bignerdranch.android.photogallery
 
 import android.annotation.SuppressLint
+import android.app.PendingIntent
 import android.app.SearchManager
 import android.content.Context
+import android.content.Intent
 import android.database.Cursor
 import android.os.Bundle
 import android.provider.SearchRecentSuggestions
@@ -11,6 +13,8 @@ import android.view.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.SearchView.OnSuggestionListener
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.core.view.isVisible
@@ -21,6 +25,10 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.work.Constraints
+import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.bignerdranch.android.photogallery.databinding.FragmentPhotoGalleryBinding
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.flow.collectLatest
@@ -28,7 +36,6 @@ import kotlinx.coroutines.launch
 
 class PhotoGalleryFragment : Fragment() {
     private val photoGalleryViewModel: PhotoGalleryViewModel by viewModels()
-
     private var _binding: FragmentPhotoGalleryBinding? = null
     private val binding
         get() = checkNotNull(_binding) {
@@ -36,6 +43,17 @@ class PhotoGalleryFragment : Fragment() {
         }
     private var adapter: MyPagingAdapter? = null
     private var searchView: SearchView? = null
+
+        // Scheduling a WorkRequest (procedure isn't compatible with my Paging (it was in onCreate())):
+//        val constraints = Constraints.Builder()
+//            .setRequiredNetworkType(NetworkType.UNMETERED)
+//            .build()
+//        val workRequest =
+//            OneTimeWorkRequestBuilder<PollWorker>()
+//                .setConstraints(constraints)
+//                .build()
+//        WorkManager.getInstance(requireContext())
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -193,5 +211,28 @@ class PhotoGalleryFragment : Fragment() {
             MySuggestionsProvider.AUTHORITY,
             MySuggestionsProvider.MODE
         ).clearHistory()
+        photoGalleryViewModel.setQuery("")
+    }
+
+    // Notification Builder example:
+    private fun notifyUser(){
+        val intent = MainActivity.newIntent(requireContext())
+        val pendingIntent = PendingIntent.getActivity(
+            requireContext(),
+            0,
+            intent,
+            PendingIntent.FLAG_IMMUTABLE
+        )
+        val resources = requireContext().resources
+        val notification = NotificationCompat
+            .Builder(requireContext(), NOTIFICATION_CHANNEL_ID)
+            .setTicker(resources.getString(R.string.new_pictures_title))
+            .setSmallIcon(android.R.drawable.ic_menu_report_image)
+            .setContentTitle(resources.getString(R.string.new_pictures_title))
+            .setContentText(resources.getString(R.string.new_pictures_text))
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+            .build()
+        NotificationManagerCompat.from(requireContext()).notify(0,notification)
     }
 }

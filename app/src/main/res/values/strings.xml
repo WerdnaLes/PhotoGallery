@@ -7,4 +7,7 @@
     <string name="clear_history_confirmation">Do you really want to clear search history?</string>
     <string name="clear_history_positive">Yes</string>
     <string name="clear_history_negative">No</string>
+    <string name="notification_channel_name">Background updates</string>
+    <string name="new_pictures_title">New PhotoGallery Pictures</string>
+    <string name="new_pictures_text">You have new pictures in PhotoGallery.</string>
 </resources>
