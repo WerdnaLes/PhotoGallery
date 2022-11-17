@@ -10,7 +10,9 @@
         android:label="PhotoGalleryFragment">
         <action
             android:id="@+id/show_photo"
-            app:destination="@id/photoPageFragment" />
+            app:destination="@id/photoPageFragment"
+            app:enterAnim="@android:anim/slide_out_right"
+            app:popExitAnim="@android:anim/fade_out" />
     </fragment>
     <fragment
         android:id="@+id/photoPageFragment"

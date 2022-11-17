@@ -53,6 +53,20 @@ class PhotoPageFragment : Fragment() {
                     }
                 }
             }
+            // Allows to go back through WebView back stack (Use it for WebView):
+//            requireActivity().onBackPressedDispatcher.addCallback(object :
+//                OnBackPressedCallback(true) {
+//                override fun handleOnBackPressed() {
+//                    if (webView.canGoBack()) {
+//                        webView.goBack()
+//                    } else {
+//                        isEnabled = false
+//                        requireActivity().onBackPressedDispatcher.onBackPressed()
+//
+//                    }
+//                }
+//
+//            })
         }
         return binding.root
     }

@@ -12,6 +12,9 @@ import android.view.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.SearchView.OnSuggestionListener
+import androidx.browser.customtabs.CustomTabColorSchemeParams
+import androidx.browser.customtabs.CustomTabsIntent
+import androidx.browser.customtabs.CustomTabsIntent.COLOR_SCHEME_DARK
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.view.MenuHost
@@ -22,13 +25,13 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.navigation.fragment.findNavController
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.GridLayoutManager
 import com.bignerdranch.android.photogallery.databinding.FragmentPhotoGalleryBinding
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+
 
 class PhotoGalleryFragment : Fragment() {
     private val photoGalleryViewModel: PhotoGalleryViewModel by viewModels()
@@ -85,10 +88,22 @@ class PhotoGalleryFragment : Fragment() {
 //            val intent =
 //                Intent(Intent.ACTION_VIEW, photoPageUri)
 //            startActivity(intent)
-            // Open selected image in this app:
-            findNavController().navigate(
-                PhotoGalleryFragmentDirections.showPhoto(photoPageUri)
-            )
+            // Open selected image via WebView:
+//            findNavController().navigate(
+//                PhotoGalleryFragmentDirections.showPhoto(photoPageUri)
+//            )
+            // Open selected image via CustomTabs:
+            val darkParams = CustomTabColorSchemeParams.Builder()
+                .setToolbarColor(
+                    requireActivity()
+                        .getColor(androidx.appcompat.R.color.primary_dark_material_dark)
+                )
+                .build()
+            CustomTabsIntent.Builder()
+                .setColorSchemeParams(COLOR_SCHEME_DARK, darkParams)
+                .setShowTitle(true)
+                .build()
+                .launchUrl(requireContext(), photoPageUri)
         }
         adapter?.addLoadStateListener { state ->
             val refreshState = state.refresh
