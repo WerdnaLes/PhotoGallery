@@ -2,6 +2,7 @@ package com.bignerdranch.android.photogallery
 
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.paging.PagingDataAdapter
@@ -15,11 +16,14 @@ import com.bignerdranch.android.photogallery.databinding.ListItemGalleryBinding
 class PhotoViewHolder(
     private val binding: ListItemGalleryBinding
 ) : ViewHolder(binding.root) {
-    fun bind(galleryItem: GalleryItem?) {
+    fun bind(galleryItem: GalleryItem?, onItemClicked: (Uri) -> Unit) {
         // Adapt the image with help of Coil:
         binding.itemImageView.load(galleryItem?.url) {
             crossfade(true)
             placeholder(ColorDrawable(Color.TRANSPARENT))
+        }
+        binding.root.setOnClickListener {
+            galleryItem?.photoPageUri?.let { item -> onItemClicked(item) }
         }
     }
 }
@@ -41,9 +45,10 @@ class PhotoViewHolder(
 //    override fun getItemCount() = galleryItems.size
 //}
 
-class MyPagingAdapter() : PagingDataAdapter<GalleryItem, PhotoViewHolder>(PhotoDiffCallback()) {
+class MyPagingAdapter(private val onItemClicked: (Uri) -> Unit) :
+    PagingDataAdapter<GalleryItem, PhotoViewHolder>(PhotoDiffCallback()) {
     override fun onBindViewHolder(holder: PhotoViewHolder, position: Int) {
-        holder.bind(getItem(position))
+        holder.bind(getItem(position), onItemClicked)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PhotoViewHolder {

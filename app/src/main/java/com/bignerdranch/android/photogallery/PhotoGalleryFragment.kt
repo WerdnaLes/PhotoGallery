@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.app.SearchManager
 import android.content.Context
-import android.content.Intent
 import android.database.Cursor
 import android.os.Bundle
 import android.provider.SearchRecentSuggestions
@@ -23,12 +22,9 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.findNavController
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.work.Constraints
-import androidx.work.NetworkType
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
 import com.bignerdranch.android.photogallery.databinding.FragmentPhotoGalleryBinding
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.flow.collectLatest
@@ -44,7 +40,7 @@ class PhotoGalleryFragment : Fragment() {
     private var adapter: MyPagingAdapter? = null
     private var searchView: SearchView? = null
 
-        // Scheduling a WorkRequest (procedure isn't compatible with my Paging (it was in onCreate())):
+    // Scheduling a WorkRequest (procedure isn't compatible with my Paging (it was in onCreate())):
 //        val constraints = Constraints.Builder()
 //            .setRequiredNetworkType(NetworkType.UNMETERED)
 //            .build()
@@ -83,7 +79,17 @@ class PhotoGalleryFragment : Fragment() {
     }
 
     private fun initView() {
-        adapter = MyPagingAdapter()
+        // Open selected image in a browser:
+        adapter = MyPagingAdapter { photoPageUri ->
+            // Open selected image in a browser:
+//            val intent =
+//                Intent(Intent.ACTION_VIEW, photoPageUri)
+//            startActivity(intent)
+            // Open selected image in this app:
+            findNavController().navigate(
+                PhotoGalleryFragmentDirections.showPhoto(photoPageUri)
+            )
+        }
         adapter?.addLoadStateListener { state ->
             val refreshState = state.refresh
             binding.progress.isVisible = refreshState == LoadState.Loading
@@ -215,7 +221,7 @@ class PhotoGalleryFragment : Fragment() {
     }
 
     // Notification Builder example:
-    private fun notifyUser(){
+    private fun notifyUser() {
         val intent = MainActivity.newIntent(requireContext())
         val pendingIntent = PendingIntent.getActivity(
             requireContext(),
@@ -233,6 +239,6 @@ class PhotoGalleryFragment : Fragment() {
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
             .build()
-        NotificationManagerCompat.from(requireContext()).notify(0,notification)
+        NotificationManagerCompat.from(requireContext()).notify(0, notification)
     }
 }
