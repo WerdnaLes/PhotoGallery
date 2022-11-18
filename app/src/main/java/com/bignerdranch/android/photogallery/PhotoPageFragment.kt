@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.navArgs
@@ -53,20 +54,20 @@ class PhotoPageFragment : Fragment() {
                     }
                 }
             }
-            // Allows to go back through WebView back stack (Use it for WebView):
-//            requireActivity().onBackPressedDispatcher.addCallback(object :
-//                OnBackPressedCallback(true) {
-//                override fun handleOnBackPressed() {
-//                    if (webView.canGoBack()) {
-//                        webView.goBack()
-//                    } else {
-//                        isEnabled = false
-//                        requireActivity().onBackPressedDispatcher.onBackPressed()
-//
-//                    }
-//                }
-//
-//            })
+            // Allows to go back through WebView back stack:
+            requireActivity().onBackPressedDispatcher.let { dispatcher ->
+                dispatcher.addCallback(object :
+                    OnBackPressedCallback(true) {
+                    override fun handleOnBackPressed() {
+                        if (webView.canGoBack()) {
+                            webView.goBack()
+                        } else {
+                            isEnabled = false
+                            dispatcher.onBackPressed()
+                        }
+                    }
+                })
+            }
         }
         return binding.root
     }

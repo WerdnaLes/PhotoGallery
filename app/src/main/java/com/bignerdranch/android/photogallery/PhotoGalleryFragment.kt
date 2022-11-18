@@ -82,7 +82,6 @@ class PhotoGalleryFragment : Fragment() {
     }
 
     private fun initView() {
-        // Open selected image in a browser:
         adapter = MyPagingAdapter { photoPageUri ->
             // Open selected image in a browser:
 //            val intent =
@@ -189,7 +188,7 @@ class PhotoGalleryFragment : Fragment() {
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 return when (menuItem.itemId) {
                     // Return to Home page
-                    R.id.menu_item_clear -> {
+                    R.id.home_page -> {
                         Log.d("PhotoGalleryFragment", "Launching home page")
                         photoGalleryViewModel.setQuery("")
                         true
